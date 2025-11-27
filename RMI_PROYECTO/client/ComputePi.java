@@ -14,9 +14,6 @@ public class ComputePi {
              return;
         }
 
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }
         try {
             String name = "Compute";
             

@@ -19,10 +19,6 @@ public class ComputeEngine implements Compute {
     }
 
     public static void main(String[] args) {
-        // Obligatorio para permitir que RMI descargue código (la clase Pi)
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }
         try {
             String name = "Compute";
             ComputeEngine engine = new ComputeEngine();
@@ -30,10 +26,19 @@ public class ComputeEngine implements Compute {
             // Exporta el objeto para recibir llamadas remotas
             Compute stub = (Compute) UnicastRemoteObject.exportObject(engine, 0);
             
-            // Obtiene y enlaza el stub al RMI Registry local
-            Registry registry = LocateRegistry.getRegistry();
-            registry.rebind(name, stub);
-            
+            // === BLOQUE DE CONEXIÓN Y CREACIÓN DEL REGISTRY ===
+            Registry registry = null;
+            try {
+                // 1. Intenta obtener el Registry si ya está activo
+                registry = LocateRegistry.getRegistry();
+                registry.rebind(name, stub);
+            } catch (RemoteException e) {
+                // 2. Si hay un error de conexión (Registry no existe), lo crea aquí mismo
+                registry = LocateRegistry.createRegistry(1099);
+                registry.rebind(name, stub);
+            }
+            // =================================================
+
             System.out.println("ComputeEngine enlazado y listo para recibir tareas.");
         } catch (Exception e) {
             System.err.println("Excepción de ComputeEngine:");
